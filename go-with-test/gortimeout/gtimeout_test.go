@@ -49,3 +49,6 @@ func Test2phasesTimeout(t *testing.T) {
 	time.Sleep(time.Second * 3)
 	t.Log(runtime.NumGoroutine())
 }
+
+//go test -run Test2phasesTimeout . -v
+//go test . -v
