@@ -41,3 +41,11 @@ func TestGoodTimeout(t *testing.T) {
 		assert.Equal(t, 3, runtime.NumGoroutine())
 	})
 }
+
+func Test2phasesTimeout(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		timeoutFirstPhase()
+	}
+	time.Sleep(time.Second * 3)
+	t.Log(runtime.NumGoroutine())
+}
