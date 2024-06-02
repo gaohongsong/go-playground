@@ -1,0 +1,51 @@
+package syncmutex
+
+import (
+	"sync"
+	"time"
+)
+
+type RW interface {
+	Write()
+	Read()
+}
+
+const cost = time.Millisecond
+
+type Lock struct {
+	count int
+	mu    sync.Mutex
+}
+
+func (l *Lock) Write() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.count++
+	time.Sleep(cost)
+}
+
+func (l *Lock) Read() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	_ = l.count
+	time.Sleep(cost)
+}
+
+type RWLock struct {
+	count int
+	mu    sync.RWMutex
+}
+
+func (l *RWLock) Write() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.count++
+	time.Sleep(cost)
+}
+
+func (l *RWLock) Read() {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	_ = l.count
+	time.Sleep(cost)
+}
