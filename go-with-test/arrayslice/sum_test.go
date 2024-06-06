@@ -1,6 +1,7 @@
 package arrayslice
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -65,4 +66,13 @@ func TestSumAllTails(t *testing.T) {
 		want := []int{0, 9}
 		checkSums(t, got, want)
 	})
+}
+
+func TestSquare(t *testing.T) {
+	a := [...]int{1, 2, 3}
+	square(&a)
+	fmt.Println(a)
+	if a[1] != 4 && a[2] != 9 {
+		t.Errorf("failed, a[1]=%d,a[2]=%d", a[1], a[2])
+	}
 }

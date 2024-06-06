@@ -55,3 +55,10 @@ func SumAllTails(numbersToSum ...[]int) []int {
 	}
 	return sums
 }
+
+// 为了避免复制数组，一般会传递指向数组的指针
+func square(arr *[3]int) {
+	for i, num := range *arr {
+		(*arr)[i] = num * num
+	}
+}
