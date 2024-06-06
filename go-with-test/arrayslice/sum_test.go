@@ -12,6 +12,7 @@ import (
 func TestSumArraySlice(t *testing.T) {
 	t.Run("test array", func(t *testing.T) {
 		// nums := [5]int{1, 2, 3, 4, 5}
+		// 自动计算长度，定义的是数组
 		nums := [...]int{1, 2, 3, 4, 5}
 		got := Sum(nums)
 
@@ -25,6 +26,7 @@ func TestSumArraySlice(t *testing.T) {
 	})
 
 	t.Run("test slice", func(t *testing.T) {
+		// 定义的是切片
 		nums := []int{1, 2, 3, 4}
 		got := SumSlice(nums)
 		want := 10
