@@ -20,4 +20,10 @@ func TestReadConfig(t *testing.T) {
 	assert.Equal(t, "go-core", cfg.Name)
 	assert.Equal(t, 8080, cfg.Port)
 	assert.Equal(t, true, cfg.Debug)
+
+	cfg1 := GetConfig()
+	t.Logf("cfg1: \n%+v\n", cfg1)
+	cfg2 := GetConfig()
+	t.Logf("cfg2: \n%+v\n", cfg2)
+	assert.Equal(t, cfg1, cfg2)
 }
