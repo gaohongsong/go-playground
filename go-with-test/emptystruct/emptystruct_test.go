@@ -12,6 +12,7 @@ import (
 // === RUN   TestEmptySruct
 // 0
 func TestEmptySruct(t *testing.T) {
+	//unsafe.Sizeof 计算出一个数据类型实例需要占用的字节数
 	fmt.Println(unsafe.Sizeof(struct{}{}))
 }
 
