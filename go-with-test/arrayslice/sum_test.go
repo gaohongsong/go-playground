@@ -2,8 +2,11 @@ package arrayslice
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
+	"runtime"
 	"testing"
+	"time"
 )
 
 // 测试覆盖率
@@ -124,3 +127,67 @@ func TestSliceAppend(t *testing.T) {
 	printLenCap(nums)  // len: 5, cap: 8 [1 2 3 4 50]
 	printLenCap(nums2) // len: 4, cap: 6 [3 4 50 60]
 }
+
+// 在已有切片的基础上进行切片，不会创建新的底层数组。因为原来的底层数组没有发生变化，内存会一直占用，直到没有变量引用该数组。
+// 因此很可能出现这么一种情况，原切片由大量的元素构成，但是我们在原切片的基础上切片，虽然只使用了很小一段，
+// 但底层数组在内存中仍然占据了大量空间，得不到释放。比较推荐的做法，使用 copy 替代 re-slice
+func lastNumsBySlice(origin []int) []int {
+	return origin[len(origin)-2:]
+}
+
+func lastNumsByCopy(origin []int) []int {
+	result := make([]int, 2)
+	copy(result, origin[len(origin)-2:])
+	return result
+}
+
+func generateWithCap(n int) []int {
+	rand.Seed(time.Now().UnixNano())
+	nums := make([]int, 0, n)
+	for i := 0; i < n; i++ {
+		nums = append(nums, rand.Int())
+	}
+	return nums
+}
+
+func printMem(t *testing.T) {
+	t.Helper()
+	var rtm runtime.MemStats
+	runtime.ReadMemStats(&rtm)
+	t.Logf("%.2f MB", float64(rtm.Alloc)/1024./1024.)
+}
+
+// generateWithCap 用于随机生成 n 个 int 整数，64位机器上，一个 int 占 8 Byte，128 * 1024 个整数恰好占据 1 MB 的空间
+func testLastChars(t *testing.T, f func([]int) []int) {
+	t.Helper()
+	ans := make([][]int, 0)
+	for k := 0; k < 100; k++ {
+		origin := generateWithCap(128 * 1024) // 1M
+		ans = append(ans, f(origin))
+		//如果我们在循环中，显示地调用 runtime.GC()，效果会更加地明显
+		//=== RUN   TestLastCharsByCopy
+		//    sum_test.go:189: 0.25 MB
+		//--- PASS: TestLastCharsByCopy (0.21s)
+		//runtime.GC()
+	}
+	printMem(t)
+	_ = ans
+}
+
+// go test -run=^TestLastChars  -v
+// === RUN   TestLastCharsBySlice
+//
+//	sum_test.go:168: 100.25 MB
+//
+// --- PASS: TestLastCharsBySlice (0.27s)
+// === RUN   TestLastCharsByCopy
+//
+//	sum_test.go:169: 1.25 MB
+//
+// --- PASS: TestLastCharsByCopy (0.21s)
+// astNumsBySlice 耗费了 100.25 MB 内存，申请的 100 个 1 MB 大小的内存没有被回收。因为切片虽然只使用了最后 2 个元素，
+// 但是因为与原来 1M 的切片引用了相同的底层数组，底层数组得不到释放
+func TestLastCharsBySlice(t *testing.T) { testLastChars(t, lastNumsBySlice) }
+
+// lastNumsByCopy 仅消耗了 1.25 MB 的内存。这是因为，通过 copy，指向了一个新的底层数组，当 origin 不再被引用后，内存会被垃圾回收
+func TestLastCharsByCopy(t *testing.T) { testLastChars(t, lastNumsByCopy) }
