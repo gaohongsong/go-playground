@@ -6,6 +6,7 @@ use (
 	./consul
 	./dicts
 	./etcd
+	./forrange
 	./goroutineexit
 	./gortimeout
 	./grpc
@@ -17,8 +18,8 @@ use (
 	./redis
 	./reflects
 	./selects
-	./string
 	./strconcat
+	./string
 	./structs
 	./syncmutex
 	./synconce
