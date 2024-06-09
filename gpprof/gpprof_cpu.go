@@ -26,6 +26,7 @@ func generate(n int) []int {
 	return nums
 }
 
+// go run .\gpprof_cpu.go
 // web查看
 // go tool pprof -http=:9999 cpu.pprof
 // 命令行查看
