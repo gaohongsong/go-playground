@@ -15,6 +15,7 @@ use (
 	./http
 	./integer
 	./iteration
+	./memalign
 	./players
 	./redis
 	./reflects
