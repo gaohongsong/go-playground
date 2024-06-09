@@ -70,6 +70,39 @@ func fib(n int) int {
 	}
 	return fib(n-2) + fib(n-1)
 }
+
+// go test -bench="Fib$" -cpuprofile cpu.pprof .
+// go tool pprof -png cpu.pprof
+// go tool pprof -web cpu.pprof > pp.html
+// go tool pprof -text cpu.pprof
+// Type: cpu
+// Time: Jun 9, 2024 at 7:47pm (CST)
+// Duration: 11.14s, Total samples = 1.90s (17.05%)
+// Showing nodes accounting for 1.90s, 100% of 1.90s total
+//
+//	 flat  flat%   sum%        cum   cum%
+//	1.87s 98.42% 98.42%      1.87s 98.42%  forrange.fib
+//	0.02s  1.05% 99.47%      0.02s  1.05%  runtime.siftupTimer
+//	0.01s  0.53%   100%      0.01s  0.53%  runtime.ready
+//	    0     0%   100%      1.87s 98.42%  forrange.BenchmarkFib
+//	    0     0%   100%      0.01s  0.53%  runtime.checkTimers
+//	    0     0%   100%      0.02s  1.05%  runtime.doaddtimer
+//	    0     0%   100%      0.01s  0.53%  runtime.findRunnable
+//	    0     0%   100%      0.01s  0.53%  runtime.goready (inline)
+//	    0     0%   100%      0.01s  0.53%  runtime.goroutineReady
+//	    0     0%   100%      0.01s  0.53%  runtime.goroutineReady.goready.func1
+//	    0     0%   100%      0.03s  1.58%  runtime.mcall
+//	    0     0%   100%      0.02s  1.05%  runtime.modtimer
+//	    0     0%   100%      0.03s  1.58%  runtime.park_m
+//	    0     0%   100%      0.02s  1.05%  runtime.resetForSleep
+//	    0     0%   100%      0.02s  1.05%  runtime.resettimer (inline)
+//	    0     0%   100%      0.01s  0.53%  runtime.runOneTimer
+//	    0     0%   100%      0.01s  0.53%  runtime.runtimer
+//	    0     0%   100%      0.01s  0.53%  runtime.schedule
+//	    0     0%   100%      0.01s  0.53%  runtime.stealWork
+//	    0     0%   100%      1.86s 97.89%  testing.(*B).launch
+//	    0     0%   100%      0.01s  0.53%  testing.(*B).run1.func1
+//	    0     0%   100%      1.87s 98.42%  testing.(*B).runN
 func BenchmarkFib(b *testing.B) {
 	time.Sleep(time.Second * 3) // 模拟耗时准备任务
 	b.ResetTimer()              // 重置定时器
