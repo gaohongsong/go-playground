@@ -50,6 +50,10 @@ func builderConcat(n int, str string) string {
 	for i := 0; i < n; i++ {
 		builder.WriteString(str)
 	}
+	//// String returns the accumulated string.
+	//func (b *Builder) String() string {
+	//	return unsafe.String(unsafe.SliceData(b.buf), len(b.buf))
+	//}
 	return builder.String()
 }
 
@@ -59,6 +63,17 @@ func bufferConcat(n int, s string) string {
 	for i := 0; i < n; i++ {
 		buf.WriteString(s)
 	}
+	//// String returns the contents of the unread portion of the buffer
+	//// as a string. If the [Buffer] is a nil pointer, it returns "<nil>".
+	////
+	//// To build strings more efficiently, see the strings.Builder type.
+	//func (b *Buffer) String() string {
+	//	if b == nil {
+	//		// Special case, useful in debugging.
+	//		return "<nil>"
+	//	}
+	//	return string(b.buf[b.off:])
+	//}
 	return buf.String()
 }
 
