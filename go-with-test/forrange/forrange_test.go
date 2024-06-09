@@ -2,11 +2,117 @@ package forrange
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 )
 
+//总结：
+//
+//进行性能测试时，尽可能保持测试环境的稳定
+//实现 benchmark 测试
+//• 位于 _test.go 文件中
+//• 函数名以 Benchmark 开头
+//• 参数为 b *testing.B
+//• b.ResetTimer() 可重置定时器
+//• b.StopTimer() 暂停计时
+//• b.StartTimer() 开始计时
+//执行 benchmark 测试
+//• go test -bench . 执行当前测试
+//• b.N 决定用例需要执行的次数
+//• -bench 可传入正则，匹配用例
+//• -cpu 可改变 CPU 核数
+//• -benchtime 可指定执行时间或具体次数
+//• -count 可设置 benchmark 轮数
+//• -benchmem 可查看内存分配量和分配次数
+
+// bench 命令行
+// go test -bench='Fib$' .
+// go test -bench='Fib$' -cpu=2,4 .
+// go test -bench='Fib$' -benchtime=5s . 默认为1s
+// go test -bench='Fib$' -benchtime=50x . 30次
+// go test -bench='Fib$' -count=2 . 测试2轮
+// go test -bench='Fib$' -benchmem . 测试内存分配情况
+
+// go test -bench='000$' .
+func generate(n int) []int {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	nums := make([]int, 0)
+	for i := 0; i < n; i++ {
+		nums = append(nums, r.Int())
+	}
+	return nums
+}
+
+// 辅助函数 benchmarkGenerate 允许传入参数 i，并构造了 4 个不同输入的 benchmark 用例
+func benchmarkGenerate(i int, b *testing.B) {
+	//b.N 从 1 开始，如果该用例能够在 1s 内完成，b.N 的值便会增加，再次执行。
+	//b.N 的值大概以 1, 2, 3, 5, 10, 20, 30, 50, 100 这样的序列递增，越到后面，增加得越快
+	for n := 0; n < b.N; n++ {
+		generate(i)
+	}
+}
+
+// 输入变为原来的 10 倍，函数每次调用的时长也差不多是原来的 10 倍，这说明复杂度是线性的 O(n)
+// BenchmarkGenerate1000-16                   82054             13378 ns/op
+// BenchmarkGenerate10000-16                  17026             71487 ns/op
+// BenchmarkGenerate100000-16                  1567            723200 ns/op
+// BenchmarkGenerate1000000-16                  140           8166956 ns/op
+func BenchmarkGenerate1000(b *testing.B)    { benchmarkGenerate(1000, b) }
+func BenchmarkGenerate10000(b *testing.B)   { benchmarkGenerate(10000, b) }
+func BenchmarkGenerate100000(b *testing.B)  { benchmarkGenerate(100000, b) }
+func BenchmarkGenerate1000000(b *testing.B) { benchmarkGenerate(1000000, b) }
+
+// ResetTimer, 受到了耗时准备任务的干扰。我们需要用 ResetTimer 屏蔽掉
+func fib(n int) int {
+	if n == 0 || n == 1 {
+		return n
+	}
+	return fib(n-2) + fib(n-1)
+}
+func BenchmarkFib(b *testing.B) {
+	time.Sleep(time.Second * 3) // 模拟耗时准备任务
+	b.ResetTimer()              // 重置定时器
+	for n := 0; n < b.N; n++ {
+		fib(30) // run fib(30) b.N times
+	}
+}
+
+// 例如，如果测试一个冒泡函数的性能，每次调用冒泡函数前，
+// 需要随机生成一个数字序列，这是非常耗时的操作，这种场景下，
+// 就需要使用 StopTimer 和 StartTimer 避免将这部分时间计算在内
+func generateWithCap1(n int) []int {
+	rand.Seed(time.Now().UnixNano())
+	nums := make([]int, 0, n)
+	for i := 0; i < n; i++ {
+		nums = append(nums, rand.Int())
+	}
+	return nums
+}
+
+func bubbleSort(nums []int) {
+	for i := 0; i < len(nums); i++ {
+		for j := 1; j < len(nums)-i; j++ {
+			if nums[j] < nums[j-1] {
+				nums[j], nums[j-1] = nums[j-1], nums[j]
+			}
+		}
+	}
+}
+
+func BenchmarkBubbleSort(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		b.StopTimer()
+		nums := generateWithCap1(10000)
+		b.StartTimer()
+		bubbleSort(nums)
+	}
+}
+
 // 遍历 []int 类型的切片，for 与 range 性能几乎没有区别
-// go test -bench="markPerf*" -benchmem -v -count=1
+// go test -bench="markPerf*" -benchtime=2s -count=1 .
+// go test -bench="markPerf*" -benchtime=2s .
+// go test -bench="markPerf*" -benchtime=10x .
 // go test -bench="markPerf*" -benchmem
 // BenchmarkPerfForIntSlice-16                 7851            156159 ns/op            1069 B/op          0 allocs/op
 // BenchmarkPerfRangeIntSlice-16               9458            124294 ns/op             887 B/op          0 allocs/op
