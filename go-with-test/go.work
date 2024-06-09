@@ -5,6 +5,7 @@ use (
 	./concurrency
 	./consul
 	./dicts
+	./emptystruct
 	./etcd
 	./forrange
 	./goroutineexit
