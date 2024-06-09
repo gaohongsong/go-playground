@@ -191,3 +191,42 @@ func TestLastCharsBySlice(t *testing.T) { testLastChars(t, lastNumsBySlice) }
 
 // lastNumsByCopy 仅消耗了 1.25 MB 的内存。这是因为，通过 copy，指向了一个新的底层数组，当 origin 不再被引用后，内存会被垃圾回收
 func TestLastCharsByCopy(t *testing.T) { testLastChars(t, lastNumsByCopy) }
+
+func foo(a []int) {
+	//新切片 a 增加了 8 个元素，原切片对应的底层数组不够放置这 8 个元素，
+	//因此申请了新的空间来放置扩充后的底层数组。这个时候新切片和原切片指向的底层数组就不是同一个了
+	a = append(a, 1, 2, 3, 4, 5, 6, 7, 8)
+	a[0] = 200
+}
+
+func foo1(a *[]int) {
+	*a = append(*a, 1, 2, 3, 4, 5, 6, 7, 8)
+	(*a)[0] = 200
+}
+
+// === RUN   TestSliceFoo
+// [1 2]
+// [200 2 1 2 3 4 5 6 7 8]
+func TestSliceFoo(t *testing.T) {
+	a := []int{1, 2}
+	foo(a)
+	fmt.Println(a)
+	foo1(&a)
+	fmt.Println(a)
+}
+
+// 设置返回值，将新切片返回并赋值给 main 函数中的变量 a
+func bar(a []int) []int {
+	a = append(a, 1, 2, 3, 4, 5, 6, 7, 8)
+	a[0] = 200
+	return a
+}
+
+// === RUN   TestSliceBar
+// [200 2 1 2 3 4 5 6 7 8]
+func TestSliceBar(t *testing.T) {
+	a := []int{1, 2}
+	//传参时拷贝了新的切片
+	a = bar(a)
+	fmt.Println(a)
+}
