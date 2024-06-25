@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -10,4 +11,8 @@ func main() {
 	v1 := []string{}
 	fmt.Println(strings.Join(v1, ","))
 	fmt.Println("aaa")
+
+	now := time.Now()
+	hourAgo := now.Add(-time.Hour)
+	fmt.Println(hourAgo)
 }
